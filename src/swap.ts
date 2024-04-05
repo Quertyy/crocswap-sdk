@@ -139,6 +139,17 @@ export class CrocSwapPlan {
     return base.userCmd(HOT_PROXY_IDX, cmd, await this.buildTxArgs(surplusFlags, args.gasEst))
   }
 
+  async userCmdCalldata (args: CrocSwapExecOpts = { }): Promise<string> {
+    const TIP = 0
+    const surplusFlags = this.maskSurplusArgs(args)
+
+    let abi = new AbiCoder()
+    return abi.encode(["address", "address", "uint256", "bool", "bool", "uint128", "uint16", "uint128", "uint128", "uint8"],
+      [this.baseToken.tokenAddr, this.quoteToken.tokenAddr, (await this.context).chain.poolIndex,
+       this.sellBase, this.qtyInBase, await this.qty, TIP, 
+       await this.calcLimitPrice(), await this.calcSlipQty(), surplusFlags])
+  }
+
   /**
    * Utility function to generate a "signed" raw transaction for a swap, used for L1 gas estimation on L2's like Scroll.
    * Extra 0xFF...F is appended to the unsigned raw transaction to simulate the signature and other missing fields.
